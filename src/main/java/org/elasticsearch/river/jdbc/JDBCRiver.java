@@ -129,7 +129,7 @@ public class JDBCRiver extends AbstractRiverComponent implements River {
         indexSettings = XContentMapValues.nodeStringValue(targetSettings.get("index_settings"), null);
         typeMapping = XContentMapValues.nodeStringValue(targetSettings.get("type_mapping"), null);
         versioning = XContentMapValues.nodeBooleanValue(sourceSettings.get("versioning"), Boolean.FALSE);
-        acknowledgeBulk = XContentMapValues.nodeBooleanValue(sourceSettings.get("acknowledge"), Boolean.FALSE);
+        acknowledgeBulk = XContentMapValues.nodeBooleanValue(targetSettings.get("acknowledge"), Boolean.FALSE);
 
         riverSource = RiverServiceLoader.findRiverSource(strategy);
         logger.debug("found river source {} for strategy {}", riverSource.getClass().getName(), strategy);

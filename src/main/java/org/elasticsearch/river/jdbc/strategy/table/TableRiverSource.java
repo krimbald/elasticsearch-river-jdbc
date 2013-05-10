@@ -107,48 +107,64 @@ public class TableRiverSource extends SimpleRiverSource {
         try {
             Connection connection = connectionForWriting();
             String riverName = context.riverName();
-            for (BulkItemResponse resp : response.items()) {
+            for (BulkItemResponse resp : response.getItems()) {
+                List<Object> params = new ArrayList<Object>();
+                params.add(resp.getIndex());
+                params.add(resp.getType());
+                params.add(resp.getId());
+
                 PreparedStatement pstmt;
                 try {
                     pstmt = prepareUpdate("update \"" + riverName + "\" set \"source_operation\" = 'ack' where \"_index\" = ? and \"_type\" = ? and \"_id\" = ?");
+                    bind(pstmt, params);
+                    executeUpdate(pstmt);
+                    close(pstmt);
                 } catch (SQLException e) {
                     try {
                         // hsqldb
                         pstmt = prepareUpdate("update " + riverName + " set \"source_operation\" = 'ack' where \"_index\" = ? and \"_type\" = ? and \"_id\" = ?");
+                        bind(pstmt, params);
+                        executeUpdate(pstmt);
+                        close(pstmt);
                     } catch (SQLException e1) {
                         // mysql
                         pstmt = prepareUpdate("update " + riverName + " set source_operation = 'ack' where _index = ? and _type = ? and _id = ?");
+                        bind(pstmt, params);
+                        executeUpdate(pstmt);
+                        close(pstmt);
                     }
                 }
-                List<Object> params = new ArrayList();
-                params.add(resp.index());
-                params.add(resp.type());
-                params.add(resp.id());
-                bind(pstmt, params);
-                executeUpdate(pstmt);
-                close(pstmt);
+
+                params = new ArrayList<Object>();
+                params.add(new Timestamp(new java.util.Date().getTime()));
+                params.add(resp.getOpType());
+                params.add(resp.isFailed());
+                params.add(resp.getFailureMessage());
+                params.add(resp.getIndex());
+                params.add(resp.getType());
+                params.add(resp.getId());
                 try {
                     pstmt = prepareUpdate("update \"" + riverName + "_ack\" set \"target_timestamp\" = ?, \"target_operation\" = ?, \"target_failed\" = ?, \"target_message\" = ? where \"_index\" = ? and \"_type\" = ? and \"_id\" = ?");
+                    bind(pstmt, params);
+                    executeUpdate(pstmt);
+                    close(pstmt);
                 } catch (SQLException e) {
                     try {
                         // hsqldb
                         pstmt = prepareUpdate("update " + riverName + "_ack set \"target_timestamp\" = ?, \"target_operation\" = ?, \"target_failed\" = ?, \"target_message\" = ? where \"_index\" = ? and \"_type\" = ? and \"_id\" = ?");
+                        bind(pstmt, params);
+                        executeUpdate(pstmt);
+                        close(pstmt);
                     } catch (SQLException e1) {
                         // mysql
                         pstmt = prepareUpdate("update " + riverName + "_ack set target_timestamp = ?, target_operation = ?, target_failed = ?, target_message = ? where _index = ? and _type = ? and _id = ?");
+                        bind(pstmt, params);
+                        executeUpdate(pstmt);
+                        close(pstmt);
                     }
                 }
-                params = new ArrayList();
-                params.add(new Timestamp(new java.util.Date().getTime()));
-                params.add(resp.opType());
-                params.add(resp.failed());
-                params.add(resp.failureMessage());
-                params.add(resp.index());
-                params.add(resp.type());
-                params.add(resp.id());
-                bind(pstmt, params);
-                executeUpdate(pstmt);
-                close(pstmt);
+                
+
             }
         } catch (SQLException ex) {
             throw new IOException(ex);
